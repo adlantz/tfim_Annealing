@@ -39,22 +39,22 @@ def Tower_Sample_Average_Energy(_Probability_Array,_Energy_Array,Sample_Size):
     for i in range(Sample_Size):
         r = np.random.rand()
         index = bisect.bisect_right(cumulative,r)
-        Energy_Val = State_Energy(lattice,basis,index)
+        Energy_Val = _Energy_Array[index]
         np.put(NN_Energy_Array,i,Energy_Val)
     return sum(NN_Energy_Array) / Sample_Size
 
-def Tower_Sample_Average_Magnetization_Sqrd(_Probability_Array,Sample_Size):
+def Tower_Sample_Average_Magnetization_Sqrd(_Probability_Array,Magnetization_Sqrd_Array,Sample_Size):
     cumulative = np.cumsum(_Probability_Array)
-    NN_Energy_Array = np.zeros(Sample_Size)
+    NN_Mag_Array = np.zeros(Sample_Size)
     for i in range(Sample_Size):
         r = np.random.rand()
         index = bisect.bisect_right(cumulative,r)
-        Energy_Val = State_Energy(lattice,basis,index)
-        np.put(NN_Energy_Array,i,Energy_Val)
-    return sum(NN_Energy_Array) / Sample_Size
+        Mag_Val = Magnetization_Sqrd_Array[index]
+        np.put(NN_Mag_Array,i,Mag_Val)
+    return sum(NN_Mag_Array) / Sample_Size
 
 
-lattice = tfim.Lattice([3],True)
+lattice = tfim.Lattice([4],True)
 basis = tfim.IsingBasis(lattice)
 _Energy_Array = Energy_Array(lattice,basis)
 _Probability_Array = Probability_Array(basis,_Energy_Array,1)
@@ -71,5 +71,5 @@ print(_Average_Energy)
 print(_Average_Magnetization_Sqrd)
 # print(_J_Beta_Range_Energy)
 
-print(Tower_Sample_Average_Energy(_Probability_Array,10000))
-print(Tower_Sample_Average_Magnetization_Sqrd(_Probability_Array,_Magnetization_Sqrd_Array,1000))
+print(Tower_Sample_Average_Energy(_Probability_Array,_Energy_Array,10000))
+print(Tower_Sample_Average_Magnetization_Sqrd(_Probability_Array,_Magnetization_Sqrd_Array,10000))
