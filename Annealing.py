@@ -33,7 +33,7 @@ def Average_Magnetization_Sqrd(basis,_Probability_Array,_Magnetization_Sqrd_Arra
 def J_Beta_Range_Energy(basis,_Energy_Array,start,end,step):
     return np.array([Average_Energy(basis,_Energy_Array,Probability_Array(basis,_Energy_Array,round(i,1))) for i in np.arange(start,end,step)])
 
-def Tower_Sample_Average_Energy(_Probability_Array,Sample_Size):
+def Tower_Sample_Average_Energy(_Probability_Array,_Energy_Array,Sample_Size):
     cumulative = np.cumsum(_Probability_Array)
     NN_Energy_Array = np.zeros(Sample_Size)
     for i in range(Sample_Size):
