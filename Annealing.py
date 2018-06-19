@@ -34,13 +34,16 @@ def J_Beta_Range_Energy(basis,_Energy_Array,start,end,step):
     return np.array([Average_Energy(basis,_Energy_Array,Probability_Array(basis,_Energy_Array,round(i,1))) for i in np.arange(start,end,step)])
 
 def Tower_Sample_Average_Energy(_Probability_Array,_Energy_Array,Sample_Size):
+    file = open("EnergiesPerUpdate","w")
     cumulative = np.cumsum(_Probability_Array)
     NN_Energy_Array = np.zeros(Sample_Size)
     for i in range(Sample_Size):
         r = np.random.rand()
         index = bisect.bisect_right(cumulative,r)
         Energy_Val = _Energy_Array[index]
+        file.write(str(Energy_Val)+"\n")
         np.put(NN_Energy_Array,i,Energy_Val)
+    file.close()
     return sum(NN_Energy_Array) / Sample_Size
 
 def Tower_Sample_Average_Magnetization_Sqrd(_Probability_Array,Magnetization_Sqrd_Array,Sample_Size):
@@ -54,22 +57,22 @@ def Tower_Sample_Average_Magnetization_Sqrd(_Probability_Array,Magnetization_Sqr
     return sum(NN_Mag_Array) / Sample_Size
 
 
-lattice = tfim.Lattice([4],True)
+lattice = tfim.Lattice([3],True)
 basis = tfim.IsingBasis(lattice)
 _Energy_Array = Energy_Array(lattice,basis)
 _Probability_Array = Probability_Array(basis,_Energy_Array,1)
-_Magnetization_Sqrd_Array = Magnetization_Sqrd_Array(basis)
+#_Magnetization_Sqrd_Array = Magnetization_Sqrd_Array(basis)
 
-_Average_Magnetization_Sqrd = Average_Magnetization_Sqrd(basis,_Probability_Array,_Magnetization_Sqrd_Array)
+#_Average_Magnetization_Sqrd = Average_Magnetization_Sqrd(basis,_Probability_Array,_Magnetization_Sqrd_Array)
 _Average_Energy = Average_Energy(basis,_Energy_Array,_Probability_Array)
-_J_Beta_Range_Energy = J_Beta_Range_Energy(basis,_Energy_Array,0.1,10,0.2)
+#_J_Beta_Range_Energy = J_Beta_Range_Energy(basis,_Energy_Array,0.1,10,0.2)
 
 # print(_Energy_Array)
 # print(_Probability_Array)
 # print(_Magnetization_Sqrd_Array)
 print(_Average_Energy)
-print(_Average_Magnetization_Sqrd)
+#print(_Average_Magnetization_Sqrd)
 # print(_J_Beta_Range_Energy)
 
-print(Tower_Sample_Average_Energy(_Probability_Array,_Energy_Array,10000))
-print(Tower_Sample_Average_Magnetization_Sqrd(_Probability_Array,_Magnetization_Sqrd_Array,10000))
+print(Tower_Sample_Average_Energy(_Probability_Array,_Energy_Array,100))
+#print(Tower_Sample_Average_Magnetization_Sqrd(_Probability_Array,_Magnetization_Sqrd_Array,100000))
