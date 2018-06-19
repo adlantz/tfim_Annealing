@@ -57,7 +57,7 @@ def Tower_Sample_Average_Magnetization_Sqrd(_Probability_Array,Magnetization_Sqr
     return sum(NN_Mag_Array) / Sample_Size
 
 
-lattice = tfim.Lattice([3],True)
+lattice = tfim.Lattice([5],True)
 basis = tfim.IsingBasis(lattice)
 _Energy_Array = Energy_Array(lattice,basis)
 _Probability_Array = Probability_Array(basis,_Energy_Array,1)
@@ -74,5 +74,5 @@ print(_Average_Energy)
 #print(_Average_Magnetization_Sqrd)
 # print(_J_Beta_Range_Energy)
 
-print(Tower_Sample_Average_Energy(_Probability_Array,_Energy_Array,100))
+print(Tower_Sample_Average_Energy(_Probability_Array,_Energy_Array,10000))
 #print(Tower_Sample_Average_Magnetization_Sqrd(_Probability_Array,_Magnetization_Sqrd_Array,100000))
