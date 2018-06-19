@@ -2,6 +2,7 @@ import tfim
 import math
 import numpy as np
 import bisect
+import progressbar
 np.set_printoptions(precision=15)
 
 
@@ -34,16 +35,16 @@ def J_Beta_Range_Energy(basis,_Energy_Array,start,end,step):
     return np.array([Average_Energy(basis,_Energy_Array,Probability_Array(basis,_Energy_Array,round(i,1))) for i in np.arange(start,end,step)])
 
 def Tower_Sample_Average_Energy(_Probability_Array,_Energy_Array,Sample_Size):
-    file = open("EnergiesPerUpdate.txt","w")
+    #file = open("EnergiesPerUpdate.txt","w")
     cumulative = np.cumsum(_Probability_Array)
     NN_Energy_Array = np.zeros(Sample_Size)
     for i in range(Sample_Size):
         r = np.random.rand()
         index = bisect.bisect_right(cumulative,r)
         Energy_Val = _Energy_Array[index]
-        file.write(str(Energy_Val)+"\n")
+        #file.write(str(Energy_Val)+"\n")
         np.put(NN_Energy_Array,i,Energy_Val)
-    file.close()
+    #file.close()
     return sum(NN_Energy_Array) / Sample_Size
 
 def Tower_Sample_Average_Magnetization_Sqrd(_Probability_Array,Magnetization_Sqrd_Array,Sample_Size):
@@ -74,5 +75,12 @@ print(_Average_Energy)
 #print(_Average_Magnetization_Sqrd)
 # print(_J_Beta_Range_Energy)
 
-print(Tower_Sample_Average_Energy(_Probability_Array,_Energy_Array,10000))
+
+file = open("EnergyVsSampleSize.txt","w")
+bar = progressbar.ProgressBar()
+for b in bar(range(1,100000)):
+    Average_Energy = Tower_Sample_Average_Energy(_Probability_Array,_Energy_Array,b)
+    file.write(str(Average_Energy) + "\n")
+
+file.close()
 #print(Tower_Sample_Average_Magnetization_Sqrd(_Probability_Array,_Magnetization_Sqrd_Array,100000))
