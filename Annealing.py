@@ -35,52 +35,62 @@ def J_Beta_Range_Energy(basis,_Energy_Array,start,end,step):
     return np.array([Average_Energy(basis,_Energy_Array,Probability_Array(basis,_Energy_Array,round(i,1))) for i in np.arange(start,end,step)])
 
 def Tower_Sample_Average_Energy(_Probability_Array,_Energy_Array,Sample_Size):
-    #file = open("EnergiesPerUpdate.txt","w")
+    fileU = open("EnergiesPerUpdate.txt","w")
+    fileS = open("EnergyVsSampleSize.txt","w")
+    fileD = open("StandardDeviationEnergy.txt","w")
     cumulative = np.cumsum(_Probability_Array)
     NN_Energy_Array = np.zeros(Sample_Size)
-    for i in range(Sample_Size):
+    for i in range(1,Sample_Size):
         r = np.random.rand()
         index = bisect.bisect_right(cumulative,r)
         Energy_Val = _Energy_Array[index]
-        #file.write(str(Energy_Val)+"\n")
         np.put(NN_Energy_Array,i,Energy_Val)
-    #file.close()
+        if i%10 == 0:
+            fileU.write(str(sum(NN_Energy_Array[i-10:i+1]) / 10)+"\n")
+        fileS.write(str(sum(NN_Energy_Array[:i+1]) / i) + "\n")
+        fileD.write(str(np.std(NN_Energy_Array[:i+1] / np.sqrt(i))) + "\n")
+    fileU.close()
+    fileS.close()
+    fileD.close()
     return sum(NN_Energy_Array) / Sample_Size
 
 def Tower_Sample_Average_Magnetization_Sqrd(_Probability_Array,Magnetization_Sqrd_Array,Sample_Size):
+    fileU = open("MagPerUpdate.txt","w")
+    fileS = open("MagVsSampleSize.txt","w")
+    fileD = open("StandardDeviationMag.txt","w")
     cumulative = np.cumsum(_Probability_Array)
     NN_Mag_Array = np.zeros(Sample_Size)
-    for i in range(Sample_Size):
+    for i in range(1,Sample_Size):
         r = np.random.rand()
         index = bisect.bisect_right(cumulative,r)
         Mag_Val = Magnetization_Sqrd_Array[index]
         np.put(NN_Mag_Array,i,Mag_Val)
+        if i%10 == 0:
+            fileU.write(str(sum(NN_Mag_Array[i-10:i+1]) / 10)+"\n")
+        fileS.write(str(sum(NN_Mag_Array[:i+1]) / i) + "\n")
+        fileD.write(str(np.std(NN_Mag_Array[:i+1] / np.sqrt(i))) + "\n")
+    fileU.close()
+    fileS.close()
+    fileD.close()
     return sum(NN_Mag_Array) / Sample_Size
 
 
-lattice = tfim.Lattice([5],True)
+lattice = tfim.Lattice([15],True)
 basis = tfim.IsingBasis(lattice)
 _Energy_Array = Energy_Array(lattice,basis)
 _Probability_Array = Probability_Array(basis,_Energy_Array,1)
-#_Magnetization_Sqrd_Array = Magnetization_Sqrd_Array(basis)
-
-#_Average_Magnetization_Sqrd = Average_Magnetization_Sqrd(basis,_Probability_Array,_Magnetization_Sqrd_Array)
-_Average_Energy = Average_Energy(basis,_Energy_Array,_Probability_Array)
-#_J_Beta_Range_Energy = J_Beta_Range_Energy(basis,_Energy_Array,0.1,10,0.2)
-
-# print(_Energy_Array)
-# print(_Probability_Array)
-# print(_Magnetization_Sqrd_Array)
-print(_Average_Energy)
-#print(_Average_Magnetization_Sqrd)
-# print(_J_Beta_Range_Energy)
+_Magnetization_Sqrd_Array = Magnetization_Sqrd_Array(basis)
 
 
-file = open("EnergyVsSampleSize.txt","w")
-bar = progressbar.ProgressBar()
-for b in bar(range(1,100000)):
-    Average_Energy = Tower_Sample_Average_Energy(_Probability_Array,_Energy_Array,b)
-    file.write(str(Average_Energy) + "\n")
+fileAv = open("ExactAverage.txt","w")
+fileAv.write(str(Average_Energy(basis,_Energy_Array,_Probability_Array)))
+fileAv.close()
 
-file.close()
-#print(Tower_Sample_Average_Magnetization_Sqrd(_Probability_Array,_Magnetization_Sqrd_Array,100000))
+fileAv = open("ExactAverageMag.txt","w")
+fileAv.write(str(Average_Magnetization_Sqrd(basis,_Probability_Array,_Magnetization_Sqrd_Array)))
+fileAv.close()
+
+
+
+Tower_Sample_Average_Magnetization_Sqrd(_Probability_Array,_Magnetization_Sqrd_Array,10000)
+Tower_Sample_Average_Energy(_Probability_Array,_Energy_Array,10000)
