@@ -224,10 +224,10 @@ def JZZ_SK_ME(basis,J):
     shift_state = np.zeros(basis.N,dtype=int)
     for b in bar(range(basis.M)):
         state = basis.spin_state(b)
-        for shift in range(1,basis.N/2+1):
+        for shift in range(1,basis.N//2+1):
             shift_state[shift:] = state[:-shift]
             shift_state[:shift] = state[-shift:]
-            if (basis.N%2 == 0) and (shift == basis.N/2):
+            if (basis.N%2 == 0) and (shift == basis.N//2):
                 JZZ[b] = JZZ[b] + 0.5*np.dot(J[shift-1,:]*shift_state,state)
             else:
                 JZZ[b] = JZZ[b] + np.dot(J[shift-1,:]*shift_state,state)
@@ -244,11 +244,19 @@ def JZZ_SK(basis,J):
     return sparse.coo_matrix((JZZ_ME,(I,I)),shape=(basis.M,basis.M))
 
 ###############################################################################
-def Jij_instance(N,J):
+def Jij_instance(N,J,dist):
     """Generates an random instance of couplings"""
-    Jij = np.random.normal(scale=J/np.sqrt(N),size=(N/2,N))
-    if N%2 == 0:
-        Jij[-1,N/2:] = Jij[-1,:N/2]
+
+    if dist == "bimodal":
+        Jij = np.random.choice([-1,1],size=(N//2,N))
+        if N%2 == 0:
+            Jij[-1,N//2:] = Jij[-1,:N//2]
+
+    elif dist == "normal":
+        Jij = np.random.normal(scale=J/np.sqrt(N),size=(N//2,N))
+        if N%2 == 0:
+            Jij[-1,N//2:] = Jij[-1,:N//2]
+
     return Jij
 
 ###############################################################################
