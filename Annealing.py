@@ -174,7 +174,7 @@ def Monte_Carlo(lattice,basis,J_BetaS,J_BetaE,Sample_Size,seed,EQTime,J_Matrix,F
 ##############################################################################
 # MAIN
 
-J_Beta = 10
+J_Beta = 5
 num_of_spins = 25
 seed = np.random.randint(2**30)
 EQTime = 250
@@ -185,20 +185,7 @@ basis = tfim.IsingBasis(lattice)
 
 
 
-Min_Energy = infdim_State_Energy(lattice,basis,0,J_Matrix)/num_of_spins
-Min_State_Array = np.array([0])
-bar = progressbar.ProgressBar()
-for i in bar(range(2**25)):
-    Energy = infdim_State_Energy(lattice,basis,i,J_Matrix)/num_of_spins
-    if Energy<Min_Energy:
-        Min_Energy = Energy
-        Min_State_Array = np.array([i])
-    elif Energy==Min_Energy:
-        Min_State_Array = np.append(Min_State_Array,i)
 
-print(Min_Energy)
-print(Min_State_Array)
-print("Degeneracy: " + str(Min_State_Array.size))
 
 
 
@@ -213,9 +200,9 @@ Annealing = "MCPerUpdate.txt"
 Equilibration = "MCEqPerUpdate.txt"
 
 
-#
-# Monte_Carlo(lattice,basis,0.1,J_Beta,500000,seed,EQTime,J_Matrix,Annealing,averages=False)
-# Monte_Carlo(lattice,basis,J_Beta,J_Beta,500000,seed,EQTime,J_Matrix,Equilibration,averages=False)
+
+Monte_Carlo(lattice,basis,0.1,J_Beta,500000,seed,EQTime,J_Matrix,Annealing,averages=False)
+Monte_Carlo(lattice,basis,J_Beta,J_Beta,500000,seed,EQTime,J_Matrix,Equilibration,averages=False)
 
 
 
