@@ -132,7 +132,6 @@ def Monte_Carlo(lattice,basis,J_BetaS,J_BetaE,Sample_Size,seed,EQTime,J_Matrix,F
     if(Seed):
         np.random.seed(seed)
 
-    # Chain_Array = np.zeros((2,Sample_Size - EQTime))
 
     state = basis.state(np.random.randint(basis.M))
     J_Beta = J_BetaS
@@ -174,8 +173,8 @@ def Monte_Carlo(lattice,basis,J_BetaS,J_BetaE,Sample_Size,seed,EQTime,J_Matrix,F
 ##############################################################################
 # MAIN
 
-J_Beta = 5
-num_of_spins = 25
+J_Beta = 10
+num_of_spins = 30
 seed = np.random.randint(2**30)
 EQTime = 250
 J_Matrix = np.loadtxt("J_Matrix.dat")
@@ -184,7 +183,7 @@ basis = tfim.IsingBasis(lattice)
 
 
 
-
+print(J_Matrix)
 
 
 
@@ -195,14 +194,16 @@ basis = tfim.IsingBasis(lattice)
 # _Magnetization_Sqrd_Array = Magnetization_Sqrd_Array(basis)
 
 # print(Average_Magnetization_Sqrd(basis,_Probability_Array,_Magnetization_Sqrd_Array))
-
-Annealing = "MCPerUpdate.txt"
-Equilibration = "MCEqPerUpdate.txt"
-
-
-
-Monte_Carlo(lattice,basis,0.1,J_Beta,500000,seed,EQTime,J_Matrix,Annealing,averages=False)
-Monte_Carlo(lattice,basis,J_Beta,J_Beta,500000,seed,EQTime,J_Matrix,Equilibration,averages=False)
+#
+# Annealing = "MCPerUpdate.txt"
+# Equilibration = "MCEqPerUpdate.txt"
+#
+#
+#
+# Monte_Carlo(lattice,basis,0.1,J_Beta,500000,seed,EQTime,J_Matrix,"MCPerUpdate1.txt",averages=False)
+# # Monte_Carlo(lattice,basis,0.1,J_Beta,250000,seed,EQTime,J_Matrix,"MCPerUpdate2.txt",averages=False)
+# # Monte_Carlo(lattice,basis,0.1,J_Beta,100000,seed,EQTime,J_Matrix,"MCPerUpdate3.txt",averages=False)
+# Monte_Carlo(lattice,basis,J_Beta,J_Beta,500000,seed,EQTime,J_Matrix,Equilibration,averages=False)
 
 
 
