@@ -1,10 +1,11 @@
+#File full of useful functions, and the Monte Carlo Sampling code
+
 import tfim
 import math
 import numpy as np
 import bisect
 import progressbar
-np.set_printoptions(precision=15)
-np.set_printoptions(threshold=np.inf)
+import argparse
 
 
 ##############################################################################
@@ -114,30 +115,34 @@ def Tower_Sample_Magnetization_Sqrd(_Probability_Array,Magnetization_Sqrd_Array,
 ##############################################################################
 # MARKOV CHAIN MONTE CARLO SAMPLING
 
-def Monte_Carlo(lattice,basis,J_BetaS,J_BetaE,Sample_Size,seed,EQTime,J_Matrix,File,writefile=True,Seed=True,averages=True):
+def Monte_Carlo(lattice,basis,J_BetaS,J_BetaE,Sample_Size,seed,EQTime,J_Matrix,RunFile,StatsFile,Constant):
     """Generates Markov chain of Energies based on their relative
     probabilities"""
-    fileU = open(File,"w")
 
-    if averages:
-        header = str(Average_Energy(basis,infdim_Energy_Array,_Probability_Array)) + "\t" + str(Average_Magnetization_Sqrd(basis,_Probability_Array,_Magnetization_Sqrd_Array)) + "\t" + str(num_of_spins)
-    else:
-        header = str(0) + "\t" + str(0) + "\t" + str(num_of_spins)
+    fileR = open(RunFile,"w")
+
+    num_of_spins = basis.N
+
+    if Constant:
+        J_BetaS = J_BetaE
 
     J_BetaStep = (J_BetaE-J_BetaS)/Sample_Size
+    J_Beta = J_BetaS
 
-    fileU.write(header + "\n")
+
     Acceptance_Number = 0
 
-    if(Seed):
-        np.random.seed(seed)
+    np.random.seed(seed)
 
 
     state = basis.state(np.random.randint(basis.M))
-    J_Beta = J_BetaS
 
-    bar = progressbar.ProgressBar()
-    for i in bar(range(Sample_Size)):
+    minimum = infdim_State_Energy(lattice,basis,basis.index(state), J_Matrix)
+    minimum_state_array = []
+    min_state_mag_array = []
+
+    # bar = progressbar.ProgressBar()
+    for i in range(Sample_Size):
         _State_Mag_Beta = State_Magnetization_Sqrd(basis,basis.index(state))
         _State_Energy_Beta = infdim_State_Energy(lattice,basis,basis.index(state),J_Matrix)
         Prob_Beta = NN_State_Log_Probability(J_Beta,_State_Energy_Beta)
@@ -154,61 +159,53 @@ def Monte_Carlo(lattice,basis,J_BetaS,J_BetaE,Sample_Size,seed,EQTime,J_Matrix,F
         if random <= probability_append:
             Acceptance_Number += 1
             _State_Mag_Alpha = State_Magnetization_Sqrd(basis,basis.index(state))
+            if _State_Energy_Alpha == minimum and state not in minimum_state_array:
+                minimum_state_array.append(state)
+                min_state_mag_array.append(_State_Mag_Alpha)
+            elif _State_Energy_Alpha < minimum:
+                minimum = _State_Energy_Alpha
+                minimum_state_array = [state]
+                min_state_mag_array = [_State_Mag_Alpha]
+
             if i >= EQTime:
                 val_Array = np.array([[_State_Energy_Alpha,_State_Mag_Alpha]])/num_of_spins
-                np.savetxt(fileU,val_Array,delimiter="\t")
+                np.savetxt(fileR,val_Array,delimiter="\t")
 
         else:
 
             basis.flip(state,index)
+            if _State_Energy_Beta == minimum and state not in minimum_state_array:
+                    minimum_state_array.append(state)
+                    min_state_mag_array.append(_State_Mag_Beta)
+            elif _State_Energy_Beta < minimum:
+                minimum = _State_Energy_Beta
+                minimum_state_array = [state]
+                min_state_mag_array = [_State_Mag_Beta]
+
             if i >= EQTime:
                 val_Array = np.array([[_State_Energy_Beta,_State_Mag_Beta]])/num_of_spins
-                np.savetxt(fileU,val_Array,delimiter="\t")
+                np.savetxt(fileR,val_Array,delimiter="\t")
 
         J_Beta+=J_BetaStep
-    print(Acceptance_Number*100/Sample_Size)
-    fileU.close()
+    Acceptance_Rate = Acceptance_Number*100/Sample_Size
 
 
-##############################################################################
-# MAIN
+    minimum_state_array = np.array(minimum_state_array).astype(int)
 
-J_Beta = 10
-num_of_spins = 30
-seed = np.random.randint(2**30)
-EQTime = 250
-J_Matrix = np.loadtxt("J_Matrix.dat")
-lattice = tfim.Lattice([num_of_spins],True)
-basis = tfim.IsingBasis(lattice)
+    fileR.close()
+
+    fileS = open(StatsFile,"w")
 
 
-
-print(J_Matrix)
-
-
-
-
-# _Energy_Array = Energy_Array(lattice,basis)
-# infdim_Energy_Array = tfim.JZZ_SK_ME(basis,J_Matrix)
-# _Probability_Array = Probability_Array(basis,infdim_Energy_Array,J_Beta)
-# _Magnetization_Sqrd_Array = Magnetization_Sqrd_Array(basis)
-
-# print(Average_Magnetization_Sqrd(basis,_Probability_Array,_Magnetization_Sqrd_Array))
-#
-# Annealing = "MCPerUpdate.txt"
-# Equilibration = "MCEqPerUpdate.txt"
-#
-#
-#
-# Monte_Carlo(lattice,basis,0.1,J_Beta,500000,seed,EQTime,J_Matrix,"MCPerUpdate1.txt",averages=False)
-# # Monte_Carlo(lattice,basis,0.1,J_Beta,250000,seed,EQTime,J_Matrix,"MCPerUpdate2.txt",averages=False)
-# # Monte_Carlo(lattice,basis,0.1,J_Beta,100000,seed,EQTime,J_Matrix,"MCPerUpdate3.txt",averages=False)
-# Monte_Carlo(lattice,basis,J_Beta,J_Beta,500000,seed,EQTime,J_Matrix,Equilibration,averages=False)
+    fileS.write("Acceptance Rate: " + str(Acceptance_Rate) + "\n")
+    fileS.write("Lowest Energy found: " + str(minimum/num_of_spins) + "\n")
+    fileS.write("Last energy found: " + str(val_Array[0][0]) + "\n")
+    fileS.write("Last mag found: " + str(val_Array[0][1]) + "\n")
+    np.savetxt(fileS,minimum_state_array,fmt='%i',delimiter="\t")
+    np.savetxt(fileS,min_state_mag_array)
 
 
+    fileS.close()
 
 
-# Monte_Carlo_Mag(lattice,basis,J_Beta,50000,seed,EQTime)
-# Tower_Sample_Magnetization_Sqrd(_Probability_Array,_Magnetization_Sqrd_Array,25000,seed)
-# Tower_Sample_Energy(_Probability_Array,_Energy_Array,10000,seed)
-# Monte_Carlo_Energy(lattice,basis,J_Beta,5000,seed,EQTime)
+    return minimum

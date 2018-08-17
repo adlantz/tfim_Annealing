@@ -244,8 +244,10 @@ def JZZ_SK(basis,J):
     return sparse.coo_matrix((JZZ_ME,(I,I)),shape=(basis.M,basis.M))
 
 ###############################################################################
-def Jij_instance(N,J,dist):
+def Jij_instance(N,J,dist,seed):
     """Generates an random instance of couplings"""
+
+    np.random.seed(seed)
 
     if dist == "bimodal":
         Jij = np.random.choice([-1,1],size=(N//2,N))

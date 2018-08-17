@@ -1,45 +1,37 @@
+#Takes Number of Spins and RNG seed (as ints)
+#Saves configuration of spins in file [num_of_spins]J_Matrix[seed].dat
+#this file can be read by MCAnnealing.py, Minima.py, and EnergyArray.py
+
+
 import tfim
 import numpy as np
-import Annealing as ann
-
-num_of_spins = 30
-lattice = tfim.Lattice([num_of_spins],True)
-basis = tfim.IsingBasis(lattice)
-
-#
-# J = tfim.Jij_instance(num_of_spins,1,"bimodal")
-
-J_Matrix = np.loadtxt("J_Matrix.dat")
-
-find_min = True
+from pathlib import Path
+import os
+import argparse
 
 
+def main():
+    #Parse Args
+    parser = argparse.ArgumentParser()
+    parser.add_argument('-N', type=int,default = 16, help = 'Number of spins')
+    parser.add_argument('-Seed', type = int, default =1, help = 'RNG seed for generating J Matrices')
+    parser.add_argument('-J', type = int, default = 1, help = 'Weight/Value of bonds between spins')
+    args = parser.parse_args()
 
-if find_min:
-    fileU = open("JMins.txt","w")
-    Min_Energy = ann.infdim_State_Energy(lattice,basis,0,J_Matrix)/num_of_spins
-    Min_State_Array = np.array([0])
-    bar = progressbar.ProgressBar()
-    for i in bar(range(2**25)):
-        Energy = ann.infdim_State_Energy(lattice,basis,i,J_Matrix)/num_of_spins
-        if Energy<Min_Energy:
-            Min_Energy = Energy
-            Min_State_Array = np.array([i])
-        elif Energy==Min_Energy:
-            Min_State_Array = np.append(Min_State_Array,i)
-
-    fileU.write(Min_Energy)
-    np.savetxt(fileU,Min_State_Array,delimiter="/t")
-    fileU.write("\nDegeneracy: " + str(Min_State_Array.size))
-    print(Min_Energy)
-    print(Min_State_Array)
-    print("Degeneracy: " + str(Min_State_Array.size))
-    fileU.close()
+    #ParseArgs
+    num_of_spins = args.N
+    seed = args.Seed
 
 
-# -3.44
-#
-# [ 6931573 13136997 15287397 15320165 15320181 15320437 18233994 18234250
-#  18234266 18267034 20417434 26622858]
-#
-#  Degeneracy: 12
+    #Make a place to put the file
+    root = Path(".")
+    folder = os.getcwd() + "/J_Matrices/J" + str(num_of_spins)
+    if not Path(folder).exists():
+        os.mkdir(folder)
+
+    #Generate random instance and save it
+    J = tfim.Jij_instance(num_of_spins,1,"bimodal",seed)
+    np.savetxt(folder + "/" + str(num_of_spins) + "J_Matrix" + str(seed) + ".dat",J)
+
+if __name__ == "__main__":
+    main()
